@@ -20,6 +20,7 @@ ARG openjdk_version="17"
 ARG postgres_version="42.6.0"
 ARG mysql_version="8.0.32"
 ARG snowflake_version="3.9.2"
+ARG spark_excel_version="3.3.1_0.18.5"
 
 ENV APACHE_SPARK_VERSION="${spark_version}" \
     HADOOP_VERSION="${hadoop_version}"
@@ -63,6 +64,7 @@ RUN if [ -z "${scala_version}" ]; then \
 RUN wget "https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/${snowflake_version}/snowflake-jdbc-${snowflake_version}.jar"
 RUN wget "https://jdbc.postgresql.org/download/postgresql-${postgres_version}.jar"
 RUN wget "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/${mysql_version}/mysql-connector-j-${mysql_version}.jar"
+RUN wget "https://repo1.maven.org/maven2/com/crealytics/spark-excel_2.13/${spark_excel_version}/spark-excel_2.13-${spark_excel_version}.jar"
 RUN cp /tmp/*.jar "${SPARK_HOME}/jars/"
 
 ENV PYSPARK_SUBMIT_ARGS="--jars ${SPARK_HOME}/jars/snowflake-jdbc-${snowflake_version}.jar,${SPARK_HOME}/jars/postgresql-${postgres_version}.jar,${SPARK_HOME}/jars/mysql-connector-j-${mysql_version}.jar  pyspark-shell"
@@ -79,6 +81,8 @@ RUN mamba install --yes \
     mamba clean --all -f -y && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
+
+RUN pip install -U koalas pandas numpy scikit-learn 
 
 WORKDIR "${HOME}"
 EXPOSE 4040
